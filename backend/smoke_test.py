@@ -1,9 +1,11 @@
-from app.container import concept_app_service
+from app.container import get_concept_app_service
 
 
 def main():
-
     print("\n--- SYSTEM SMOKE TEST ---\n")
+
+    # Build the application service the same way the API will
+    concept_app_service = get_concept_app_service()
 
     data = {
         "name": "Gravity",
@@ -16,7 +18,7 @@ def main():
         "scope_boundaries": None,
     }
 
-    # ✅ CREATE
+    # ✅ CREATE (version 1)
     result = concept_app_service.create_concept(
         data=data,
         created_by="system"
@@ -24,11 +26,11 @@ def main():
 
     concept, version = result.value
     warnings = result.warnings
-
     concept_id = concept.id
 
     print("✅ Concept created:", concept_id)
-    print("Warnings:", warnings)
+    print("   Version:", version.version_number)
+    print("   Warnings:", warnings)
 
     # ✅ UPDATE (creates version 2)
     updated_data = {
@@ -45,14 +47,16 @@ def main():
     concept, version = result.value
     warnings = result.warnings
 
-    print("✅ Concept updated to version:", version.version_number)
+    print("✅ Concept updated")
+    print("   Version:", version.version_number)
+    print("   Warnings:", warnings)
 
     # ✅ FETCH LATEST
     result = concept_app_service.get_concept(concept_id)
 
     concept, latest = result.value
 
-    print("✅ Latest version:", latest.version_number)
+    print("✅ Latest version fetched:", latest.version_number)
 
     # ✅ CHANGE STATUS
     result = concept_app_service.change_status(

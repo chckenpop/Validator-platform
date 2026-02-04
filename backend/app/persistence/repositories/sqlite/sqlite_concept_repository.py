@@ -4,11 +4,13 @@ from typing import Optional
 from app.domain.concept.models import Concept, ConceptVersion
 from app.persistence.interfaces.concept_repository import ConceptRepository
 from app.persistence.db import get_connection
-
+import os
 
 class SQLiteConceptRepository(ConceptRepository):
     def __init__(self, db_path: str):
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
         self.db_path = db_path
+
 
     def save_concept(self, concept: Concept) -> None:
         with get_connection(self.db_path) as conn:
@@ -111,3 +113,41 @@ class SQLiteConceptRepository(ConceptRepository):
             created_at=datetime.fromisoformat(row["created_at"]),
             change_note=row["change_note"],
         )
+    
+    def list_versions(self, concept_id: str):
+
+        with get_connection(self.db_path) as conn:
+            rows = conn.execute(
+                """
+                SELECT *
+                FROM concept_versions
+                WHERE concept_id = ?
+                ORDER BY version_number ASC
+                """,
+                (concept_id,),
+            ).fetchall()
+
+        versions = []
+
+        for row in rows:
+            versions.append(
+                ConceptVersion(
+                    id=row["id"],
+                    concept_id=row["concept_id"],
+                    version_number=row["version_number"],
+                    name=row["name"],
+                    core_definition=row["core_definition"],
+                    expanded_explanation=row["expanded_explanation"],
+                    learning_objective=row["learning_objective"],
+                    examples=json.loads(row["examples"]),
+                    misconceptions=json.loads(row["misconceptions"]),
+                    prerequisites=json.loads(row["prerequisites"]),
+                    scope_boundaries=row["scope_boundaries"],
+                    created_by=row["created_by"],
+                    created_at=datetime.fromisoformat(row["created_at"]),
+                    change_note=row["change_note"],
+                )
+            )
+
+        return versions
+

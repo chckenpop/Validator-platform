@@ -1,25 +1,26 @@
-from app.persistence.interfaces.concept_repository import ConceptRepository
-from app.persistence.repositories.in_memory.in_memory_concept_repository import (
-    InMemoryConceptRepository,
-)
-
 from app.domain.concept.service import ConceptService
-from app.application.concept_app_service import ConceptAppService
-
-from app.persistence.repositories.sqlite.sqlite_concept_repository import (
-    SQLiteConceptRepository
-)
 from app.application.concept_app_service import ConceptApplicationService
 
-def build_concept_app_service():
+from app.persistence.repositories.sqlite.sqlite_concept_repository import (
+    SQLiteConceptRepository,
+)
+# For dev/testing you can swap this:
+# from app.persistence.repositories.in_memory.in_memory_concept_repository import InMemoryConceptRepository
+
+
+def get_concept_app_service() -> ConceptApplicationService:
+    """
+    Builds and returns a fully wired ConceptApplicationService.
+
+    This is the single source of truth for backend wiring.
+    """
+
+    # Persistence
     repo = SQLiteConceptRepository(db_path="data/app.db")
-    return ConceptApplicationService(repo)
+    # repo = InMemoryConceptRepository()
 
-# Repository
-concept_repository: ConceptRepository = InMemoryConceptRepository()
+    # Domain (stateless)
+    domain = ConceptService()
 
-# Domain Service
-concept_domain_service = ConceptService(concept_repository)
-
-# Application Service
-concept_app_service = ConceptAppService(concept_domain_service,concept_repository)
+    # Application
+    return ConceptApplicationService(domain, repo)

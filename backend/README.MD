@@ -99,3 +99,52 @@ If you'd like, I can:
 - Implement a simple SQLite repository and wiring for quick integration.
 
 Which of these should I do next?
+
+
+┌──────────────────────────┐
+│        CLIENT            │
+│ (Browser / Frontend)     │
+└───────────┬──────────────┘
+            │ HTTP (JSON)
+            ▼
+┌──────────────────────────┐
+│        API LAYER         │
+│  FastAPI Routes          │
+│  - Parse request         │
+│  - Return response       │
+└───────────┬──────────────┘
+            │ Method calls
+            ▼
+┌──────────────────────────┐
+│   APPLICATION LAYER      │
+│ ConceptApplicationService│
+│  - Orchestrates flow     │
+│  - Calls domain          │
+│  - Persists results      │
+└───────────┬──────────────┘
+            │ Pure Python
+            ▼
+┌──────────────────────────┐
+│      DOMAIN LAYER        │
+│ ConceptService           │
+│  - Business rules        │
+│  - Versioning            │
+│  - Lifecycle             │
+│  - Validation warnings   │
+└───────────┬──────────────┘
+            │ Domain objects
+            ▼
+┌──────────────────────────┐
+│    PERSISTENCE LAYER     │
+│ ConceptRepository        │
+│  - SQLite adapter        │
+│  - In-memory adapter     │
+└───────────┬──────────────┘
+            │ SQL
+            ▼
+┌──────────────────────────┐
+│        DATABASE          │
+│        SQLite            │
+│  - concepts              │
+│  - concept_versions      │
+└──────────────────────────┘
