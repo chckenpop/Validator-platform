@@ -1,9 +1,9 @@
 from datetime import datetime
 from uuid import uuid4
-
 from .models import Concept, ConceptVersion
 from .rules import can_transition
-
+from app.domain.common.result import DomainResult
+from app.validation.concept_validation import validate_concept_version
 
 class ConceptService:
     """
@@ -11,7 +11,15 @@ class ConceptService:
     versioning, and lifecycle transitions.
     """
 
-    def create_concept(self, data: dict, created_by: str) -> tuple[Concept, ConceptVersion]:
+    def __init__(self, repository):
+        self.repository = repository
+
+
+    def create_concept(
+    self,
+    data: dict,
+    created_by: str
+) -> DomainResult[tuple[Concept, ConceptVersion]]:
         now = datetime.utcnow()
         concept_id = str(uuid4())
 
@@ -40,20 +48,21 @@ class ConceptService:
             updated_at=now
         )
 
-        return concept, version
+        warnings = validate_concept_version(version)
+
+        return DomainResult(
+            value=(concept, version),
+            warnings=warnings
+        )
 
     def update_concept(
-        self,
-        concept: Concept,
-        latest_version: ConceptVersion,
-        data: dict,
-        created_by: str,
-        change_note: str
-    ) -> tuple[Concept, ConceptVersion]:
-        """
-        Creates a new ConceptVersion for an existing Concept.
-        Does NOT modify existing versions.
-        """
+    self,
+    concept: Concept,
+    latest_version: ConceptVersion,
+    data: dict,
+    created_by: str,
+    change_note: str
+) -> DomainResult[tuple[Concept, ConceptVersion]]:
         now = datetime.utcnow()
         next_version_number = latest_version.version_number + 1
 
@@ -91,22 +100,32 @@ class ConceptService:
             updated_at=now
         )
 
-        return updated_concept, new_version
+        warnings = validate_concept_version(new_version)
 
-    def change_status(self, concept: Concept, new_status: str) -> Concept:
-        """
-        Changes the lifecycle status of a Concept.
-        Does NOT modify content or versions.
-        """
+        return DomainResult(
+            value=(updated_concept, new_version),
+            warnings=warnings
+        )
+
+    def change_status(
+    self,
+    concept: Concept,
+    new_status: str
+) -> DomainResult[Concept]:
         if not can_transition(concept.status, new_status):
             raise ValueError(
                 f"Invalid status transition: {concept.status} → {new_status}"
             )
 
-        return Concept(
+        updated_concept = Concept(
             id=concept.id,
             current_version=concept.current_version,
             status=new_status,
             created_at=concept.created_at,
             updated_at=datetime.utcnow()
+        )
+
+        return DomainResult(    
+            value=updated_concept,
+            warnings=[]
         )
