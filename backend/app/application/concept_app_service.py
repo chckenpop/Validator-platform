@@ -1,6 +1,6 @@
 from app.domain.common.result import DomainResult
 
-class ConceptAppService:
+class ConceptApplicationService:
 
     def __init__(self, domain_service, repository):
         self.domain = domain_service

@@ -11,8 +11,8 @@ class ConceptService:
     versioning, and lifecycle transitions.
     """
 
-    def __init__(self, repository):
-        self.repository = repository
+    def __init__(self):
+        pass
 
 
     def create_concept(
