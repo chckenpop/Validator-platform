@@ -198,7 +198,7 @@ When asking AI to generate code:
 
 AI is allowed to:
 - Write boilerplate
-- Implement agreed interfaces
+- Implement agreed interfaces 
 - Fill in repetitive code
 
 AI is NOT allowed to:
